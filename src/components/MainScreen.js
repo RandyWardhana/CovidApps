@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, StatusBar, FlatList, View, StyleSheet, Dimensions, TextInput } from 'react-native'
+import { SafeAreaView, Text, StatusBar, FlatList, View, StyleSheet, Dimensions, RefreshControl } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { Spinner } from 'native-base'
@@ -11,8 +11,25 @@ const { height } = Dimensions.get('window')
 
 class MainScreen extends Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      refreshing: true
+    }
+  }
+
   componentDidMount() {
     this.props.getAllCountriesCases()
+    this.setState({ refreshing: false })
+  }
+  
+  onRefresh() {
+    this.props.getAllCountriesCases()
+    this.setState({ refreshing: false })
+  }
+
+  formatNumber(num) {
+    return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
   }
 
   renderItem(item, index) {
@@ -21,17 +38,17 @@ class MainScreen extends Component {
       <View key={index} style={styles.listItem}>
         <Text style={styles.textTitle}>{item.country}</Text>
         <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Cases: ${item.cases} | `}</Text>
-          <Text style={styles.textDetail}>{`Today: ${item.todayCases} | `}</Text>
-          <Text style={styles.textDetail}>{`Active: ${item.active}`}</Text>
+          <Text style={styles.textDetail}>{`Cases: ${this.formatNumber(item.cases)} | `}</Text>
+          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayCases)} | `}</Text>
+          <Text style={styles.textDetail}>{`Active: ${this.formatNumber(item.active)}`}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Deaths: ${item.deaths} | `}</Text>
-          <Text style={styles.textDetail}>{`Today: ${item.todayDeaths}`}</Text>
+          <Text style={styles.textDetail}>{`Deaths: ${this.formatNumber(item.deaths)} | `}</Text>
+          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayDeaths)}`}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Recovered: ${item.recovered} | `}</Text>
-          <Text style={styles.textDetail}>{`Critical: ${item.critical}`}</Text>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)} | `}</Text>
+          <Text style={styles.textDetail}>{`Critical: ${this.formatNumber(item.critical)}`}</Text>
         </View>
       </View>
     )
@@ -39,6 +56,7 @@ class MainScreen extends Component {
 
   renderData() {
     const { listAllCountriesCases, loadingAllCountriesCases } = this.props.covid
+    const { refreshing } = this.state
 
     if (loadingAllCountriesCases) {
       return (
@@ -51,6 +69,11 @@ class MainScreen extends Component {
       return (
         <>
           <FlatList
+            refreshControl={
+              <RefreshControl
+                onRefresh={() => this.onRefresh()}
+                refreshing={refreshing}
+              />}
             contentContainerStyle={styles.listItemContainer}
             data={listAllCountriesCases}
             renderItem={({ item, index }) => this.renderItem(item, index)} />
