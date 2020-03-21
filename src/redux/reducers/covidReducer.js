@@ -1,13 +1,19 @@
 'use strict'
 
-import { GET_ALL_CASES, GET_ALL_CASES_START, GET_ALL_CASES_STOP, GET_ALL_COUNTRIES_START, GET_ALL_COUNTRIES, GET_ALL_COUNTRIES_STOP } from '../constants/index'
+import { 
+  GET_ALL_CASES, GET_ALL_CASES_START, GET_ALL_CASES_STOP, 
+  GET_ALL_COUNTRIES_START, GET_ALL_COUNTRIES, GET_ALL_COUNTRIES_STOP,
+  GET_COUNTRIES_START, GET_COUNTRIES, GET_COUNTRIES_STOP
+} from '../constants/index'
 
 const defaultState = {
   listAllCases: null,
   listAllCountriesCases: null,
+  listCountriesCases: null,
 
   loadingAllCases: false,
   loadingAllCountriesCases: false,
+  loadingCountriesCases: false,
 }
 
 export default (state = defaultState, action) => {
@@ -46,6 +52,24 @@ export default (state = defaultState, action) => {
       state = {
         ...state,
         loadingAllCountriesCases: false
+      }
+      break
+    case GET_COUNTRIES_START:
+      state = {
+        ...state,
+        loadingCountriesCases: true
+      }
+      break
+    case GET_COUNTRIES:
+      state = {
+        ...state,
+        listCountriesCases: action.listCountriesCases
+      }
+      break
+    case GET_COUNTRIES_STOP:
+      state = {
+        ...state,
+        loadingCountriesCases: false
       }
       break
     default:

@@ -10,6 +10,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@eva-design/eva": "^1.4.0",
+    "@ui-kitten/components": "^4.4.1",
+    "@ui-kitten/eva-icons": "^4.4.1",
     "axios": "^0.19.2",
     "lodash": "^4.17.15",
     "native-base": "^2.13.12",
@@ -17,7 +20,13 @@
     "react-native": "0.61.5",
     "react-native-gesture-handler": "^1.6.0",
     "react-native-modal": "^11.5.5",
+    "react-native-reanimated": "^1.7.0",
+    "react-native-screens": "^2.0.0-alpha.32",
+    "react-native-svg": "^12.0.3",
+    "react-native-vector-icons": "^6.6.0",
+    "react-native-webview": "^7.0.5",
     "react-navigation": "^4.3.1",
+    "react-navigation-tabs": "^2.8.6",
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0"
@@ -34,5 +43,10 @@
   },
   "jest": {
     "preset": "react-native"
+  },
+  "rnpm": {
+    "assets": [
+      "./assets/fonts"
+    ]
   }
 }

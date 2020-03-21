@@ -1,7 +1,11 @@
 'use strict'
 
 import API from '../constants/listAPI'
-import { GET_ALL_CASES, GET_ALL_CASES_START, GET_ALL_CASES_STOP, GET_ALL_COUNTRIES_START, GET_ALL_COUNTRIES, GET_ALL_COUNTRIES_STOP } from '../constants'
+import {
+  GET_ALL_CASES, GET_ALL_CASES_START, GET_ALL_CASES_STOP, 
+  GET_ALL_COUNTRIES_START, GET_ALL_COUNTRIES, GET_ALL_COUNTRIES_STOP,
+  GET_COUNTRIES_START, GET_COUNTRIES, GET_COUNTRIES_STOP
+} from '../constants'
 
 let api = API.create()
 
@@ -23,13 +27,29 @@ export const getAllCases = () => {
 export const getAllCountriesCases = () => {
   return async (dispatch) => {
     try {
-      dispatch(showLoadingCountries())
+      dispatch(showAllLoadingCountries())
 
       let result = await api.getAllCountriesCases()
       dispatch(fetchAllCountriesCases(result.data))
 
-      dispatch(hideLoadingCountries())
+      dispatch(hideAllLoadingCountries())
 
+    } catch (e) {
+      throw e
+    }
+  }
+}
+
+export const getCountriesCases = (country) => {
+  return async (dispatch) => {
+    try {
+      dispatch(showLoadingCountries())
+  
+      let result = await api.getCountriesCases(country)
+      dispatch(fetchCountriesCases(result.data))
+  
+      dispatch(hideLoadingCountries())
+  
     } catch (e) {
       throw e
     }
@@ -50,6 +70,13 @@ function fetchAllCountriesCases(listAllCountriesCases) {
   }
 }
 
+function fetchCountriesCases(listCountriesCases) {
+  return {
+    type: GET_COUNTRIES,
+    listCountriesCases
+  }
+}
+
 function showLoading() {
   return {
     type: GET_ALL_CASES_START
@@ -62,14 +89,26 @@ function hideLoading() {
   }
 }
 
-function showLoadingCountries() {
+function showAllLoadingCountries() {
   return {
     type: GET_ALL_COUNTRIES_START
   }
 }
 
-function hideLoadingCountries() {
+function hideAllLoadingCountries() {
   return {
     type: GET_ALL_COUNTRIES_STOP
+  }
+}
+
+function showLoadingCountries() {
+  return {
+    type: GET_COUNTRIES_START
+  }
+}
+
+function hideLoadingCountries() {
+  return {
+    type: GET_COUNTRIES_STOP
   }
 }
