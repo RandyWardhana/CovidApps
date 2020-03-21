@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput } from 'react-native'
+import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, Platform } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { Spinner } from 'native-base'
-import { Card, Layout, CardHeader } from '@ui-kitten/components'
+import { Spinner, Item } from 'native-base'
+import Feather from 'react-native-vector-icons/Feather'
+import { Card, Input } from '@ui-kitten/components'
 import _ from 'lodash'
 
 import { getAllCases, getAllCountriesCases } from '../redux/actions/covidAction'
@@ -48,20 +49,18 @@ class CountriesScreen extends Component {
         <View style={styles.divider} />
 
         {/* Content */}
-        <View style={[styles.row, { justifyContent: 'space-between' }]}>
-          <View style={styles.column}>
-            <Text style={styles.textDetail}>{`Cases: ${this.formatNumber(item.cases)}`}</Text>
-            <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayCases)}`}</Text>
-            <Text style={styles.textDetail}>{`Active: ${this.formatNumber(item.active)}`}</Text>
-          </View>
-          <View style={styles.column}>
-            <Text style={styles.textDetail}>{`Deaths: ${this.formatNumber(item.deaths)}`}</Text>
-            <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayDeaths)}`}</Text>
-          </View>
-          <View style={styles.column}>
-            <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
-            <Text style={styles.textDetail}>{`Critical: ${this.formatNumber(item.critical)}`}</Text>
-          </View>
+        <View style={styles.row}>
+          <Text style={styles.textDetail}>{`Cases: ${this.formatNumber(item.cases)} · `}</Text>
+          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayCases)} · `}</Text>
+          <Text style={styles.textDetail}>{`Active: ${this.formatNumber(item.active)}`}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.textDetail}>{`Deaths: ${this.formatNumber(item.deaths)} · `}</Text>
+          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayDeaths)}`}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)} · `}</Text>
+          <Text style={styles.textDetail}>{`Critical: ${this.formatNumber(item.critical)}`}</Text>
         </View>
       </Card>
     )
@@ -73,11 +72,11 @@ class CountriesScreen extends Component {
     let filtered = _.filter(listAllCountriesCases, (item) => {
       return item.country.toLowerCase().includes(searchText.toLowerCase())
     })
-    
+
     if (_.isEmpty(searchText)) {
       filtered = null
     }
-    
+
     this.setState({ searchText, filteredListItem: filtered })
   }
 
@@ -88,12 +87,15 @@ class CountriesScreen extends Component {
     if (!loadingAllCountriesCases && listAllCountriesCases) {
       return (
         <>
+        <Item style={styles.searchContainer}>
+          <Feather name='search' size={20} color={'#bdbdbd'} />
           <TextInput
+            style={styles.textInput}
             placeholder={'Search Country'}
             placeholderTextColor={'#bdbdbd'}
-            style={styles.textInput}
             value={searchText}
             onChangeText={(text) => this.onSearchTextChange(text)} />
+        </Item>
           <FlatList
             refreshControl={
               <RefreshControl
@@ -172,16 +174,16 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   textInput: {
-    borderRadius: 4,
-    borderColor: disabled,
-    borderWidth: 2,
     color: black,
     fontFamily: 'Poppins-Medium',
-    height: 40,
-    margin: 16,
-    marginBottom: 4,
-    paddingHorizontal: 16,
+    fontSize: 16,
+    flex: 1,
+    padding: 16,
   },
+  searchContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  }
 })
 
 const mapStateToProps = (state) => ({
