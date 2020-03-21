@@ -33,7 +33,7 @@ class AllScreen extends Component {
   }
 
   renderItem(item, header) {
-    let statusHeader = header == 'Cases' ? basic : header == 'Deaths' ? danger : success
+    let statusHeader = header == 'Cases' ? black : header == 'Deaths' ? danger : success
 
     return (
       <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
