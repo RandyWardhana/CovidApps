@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, Platform } from 'react-native'
+import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, TouchableOpacity } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { Spinner, Item } from 'native-base'
+import { Spinner, Item, Icon } from 'native-base'
 import Feather from 'react-native-vector-icons/Feather'
-import { Card, Input } from '@ui-kitten/components'
+import { Card } from '@ui-kitten/components'
 import _ from 'lodash'
 
 import { getAllCases, getAllCountriesCases } from '../redux/actions/covidAction'
@@ -17,13 +17,14 @@ class CountriesScreen extends Component {
     this.state = {
       filteredListItem: null,
       refreshing: true,
-      searchText: null
+      searchText: null,
+      alert: true,
     }
   }
 
   componentDidMount() {
     this.props.getAllCountriesCases()
-    this.setState({ refreshing: false })
+    this.setState({ refreshing: false, alert: true })
   }
 
   onRefresh() {
@@ -44,23 +45,26 @@ class CountriesScreen extends Component {
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
         {/* Header */}
-        <Text style={styles.textTitle}>{item.country}</Text>
+        <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
+          <Text style={styles.textTitle}>{item.country}</Text>
+          <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
+        </View>
         {/* Divider */}
         <View style={styles.divider} />
 
         {/* Content */}
-        <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Cases: ${this.formatNumber(item.cases)} · `}</Text>
-          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayCases)} · `}</Text>
-          <Text style={styles.textDetail}>{`Active: ${this.formatNumber(item.active)}`}</Text>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths)}`}</Text>
         </View>
-        <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Deaths: ${this.formatNumber(item.deaths)} · `}</Text>
-          <Text style={styles.textDetail}>{`Today: ${this.formatNumber(item.todayDeaths)}`}</Text>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths)}`}</Text>
+          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active)}`}</Text>
         </View>
-        <View style={styles.row}>
-          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)} · `}</Text>
-          <Text style={styles.textDetail}>{`Critical: ${this.formatNumber(item.critical)}`}</Text>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
+          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical)}`}</Text>
         </View>
       </Card>
     )
@@ -82,20 +86,20 @@ class CountriesScreen extends Component {
 
   renderData() {
     const { listAllCountriesCases, loadingAllCountriesCases } = this.props.covid
-    const { refreshing, searchText, filteredListItem } = this.state
+    const { refreshing, searchText, filteredListItem, alert } = this.state
 
     if (!loadingAllCountriesCases && listAllCountriesCases) {
       return (
         <>
-        <Item style={styles.searchContainer}>
-          <Feather name='search' size={20} color={'#bdbdbd'} />
-          <TextInput
-            style={styles.textInput}
-            placeholder={'Search Country'}
-            placeholderTextColor={'#bdbdbd'}
-            value={searchText}
-            onChangeText={(text) => this.onSearchTextChange(text)} />
-        </Item>
+          <Item style={styles.searchContainer}>
+            <Feather name='search' size={20} color={'#bdbdbd'} />
+            <TextInput
+              style={styles.textInput}
+              placeholder={'Search Country'}
+              placeholderTextColor={'#bdbdbd'}
+              value={searchText}
+              onChangeText={(text) => this.onSearchTextChange(text)} />
+          </Item>
           <FlatList
             refreshControl={
               <RefreshControl
@@ -105,6 +109,16 @@ class CountriesScreen extends Component {
             contentContainerStyle={styles.listItemContainer}
             data={filteredListItem || listAllCountriesCases}
             renderItem={({ item, index }) => this.renderItem(item, index)} />
+          {alert && (
+            <View style={[styles.row, styles.alertContainer]}>
+              <Text style={styles.alert}>Data is sorted by most cases.</Text>
+              <TouchableOpacity
+                onPress={() => this.setState({ alert: false })}
+                style={{ marginLeft: 16 }}>
+                <Icon type='MaterialIcons' name='close' style={{ color: white, fontSize: 20 }} />
+              </TouchableOpacity>
+            </View>
+          )}
         </>
       )
     }
@@ -165,7 +179,7 @@ const styles = StyleSheet.create({
   textDetail: {
     color: blackSecondary,
     fontFamily: 'Poppins-Light',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   row: {
     flexDirection: 'row'
@@ -183,6 +197,21 @@ const styles = StyleSheet.create({
   searchContainer: {
     alignItems: 'center',
     paddingHorizontal: 16,
+  },
+  alertContainer: {
+    alignSelf: 'center',
+    backgroundColor: black,
+    borderRadius: 32,
+    bottom: 8,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    position: 'absolute',
+  },
+  alert: {
+    color: white,
+    fontFamily: 'Poppins-Medium',
+    fontSize: 13,
   }
 })
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform } from 'react-native'
+import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, Dimensions } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { Spinner } from 'native-base'
@@ -7,7 +7,7 @@ import { Card, Layout } from '@ui-kitten/components'
 import _ from 'lodash'
 
 import { getAllCases } from '../redux/actions/covidAction'
-import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color';
+import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
 
 class AllScreen extends Component {
 
@@ -59,6 +59,9 @@ class AllScreen extends Component {
     if (!loadingAllCases && listAllCases) {
       return (
         <ScrollView style={styles.container} refreshControl={<RefreshControl onRefresh={() => this.onRefresh()} refreshing={refreshing} />}>
+          <Text style={styles.textHero}>
+            Global Coronavirus Pandemic Cases
+          </Text>
           {this.renderItem(listAllCases.cases, 'Cases')}
           {this.renderItem(listAllCases.deaths, 'Deaths')}
           {this.renderItem(listAllCases.recovered, 'Recovered')}
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: white,
     flex: 1,
-    padding: Platform.OS == 'ios' ? 16:8,
+    padding: Platform.OS == 'ios' ? 16 : 8,
   },
   spinner: {
     flex: 1,
@@ -123,6 +126,12 @@ const styles = StyleSheet.create({
   },
   column: {
     flexDirection: 'column'
+  },
+  textHero: {
+    color: black,
+    fontFamily: 'Poppins-Bold',
+    fontSize: 20,
+    paddingVertical: 16,
   }
 })
 
