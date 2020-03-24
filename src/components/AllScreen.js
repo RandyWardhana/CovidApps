@@ -37,7 +37,7 @@ class AllScreen extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.pinnedCountry !== prevState.pinnedCountry) {
-      if (this.state.pinnedCountry !== '') this.props.getCountriesCases(this.state.pinnedCountry)
+      if (!_.isEmpty(this.state.pinnedCountry)) this.props.getCountriesCases(this.state.pinnedCountry)
     }
   }
 
