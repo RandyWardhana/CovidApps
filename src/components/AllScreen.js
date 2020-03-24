@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, Dimensions } from 'react-native'
+import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, TouchableOpacity } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { Spinner } from 'native-base'
-import { Card, Layout } from '@ui-kitten/components'
+import { Spinner, Icon } from 'native-base'
+import { Card } from '@ui-kitten/components'
 import _ from 'lodash'
+import DefaultPreference from 'react-native-default-preference'
 
-import { getAllCases } from '../redux/actions/covidAction'
+import { getAllCases, getCountriesCases } from '../redux/actions/covidAction'
 import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
 
 class AllScreen extends Component {
@@ -14,22 +15,52 @@ class AllScreen extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      refreshing: true
+      refreshing: true,
+      pinnedCountry: ''
     }
   }
 
   componentDidMount() {
+    this.getPreference()
     this.props.getAllCases()
+
     this.setState({ refreshing: false })
   }
 
+  getPreference() {
+    DefaultPreference.get('pinned').then((res) => {
+      this.setState({ pinnedCountry: res })      
+    }).catch((err) => {
+      throw err
+    })
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.pinnedCountry !== prevState.pinnedCountry) {
+      if (this.state.pinnedCountry !== '') this.props.getCountriesCases(this.state.pinnedCountry)
+    }
+  }
+
   onRefresh() {
+    this.getPreference()
     this.props.getAllCases()
     this.setState({ refreshing: false })
   }
 
   formatNumber(num) {
     return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+  }
+
+  setDefaultPreference() {
+    DefaultPreference.set('pinned', '').then((res) => {
+      DefaultPreference.get('pinned').then((res) => {
+        this.setState({ pinnedCountry: res })
+      }).catch((err) => {
+        throw err
+      })
+    }).catch((err) => {
+      throw err
+    })
   }
 
   renderItem(item, header) {
@@ -52,9 +83,47 @@ class AllScreen extends Component {
     )
   }
 
+  renderItemPinned(item) {
+    let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
+
+    return (
+      <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium', marginBottom: 48 }}>
+        {/* Status Header */}
+        <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
+
+        {/* Header */}
+        <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
+          <Text style={styles.textTitle}>{item.country}</Text>
+          <TouchableOpacity
+            onPress={() => this.setDefaultPreference()}
+            style={{ alignSelf: 'center' }}>
+            <Icon type='AntDesign' name='pushpin' style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
+          </TouchableOpacity>
+        </View>
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Content */}
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths)}`}</Text>
+        </View>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths)}`}</Text>
+          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active)}`}</Text>
+        </View>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
+          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical)}`}</Text>
+        </View>
+      </Card>
+    )
+  }
+
   renderData() {
-    const { listAllCases, loadingAllCases } = this.props.covid
-    const { refreshing } = this.state
+    const { listAllCases, listCountriesCases, loadingAllCases, loadingCountriesCases } = this.props.covid
+    const { refreshing, pinnedCountry } = this.state
 
     if (!loadingAllCases && listAllCases) {
       return (
@@ -65,6 +134,14 @@ class AllScreen extends Component {
           {this.renderItem(listAllCases.cases, 'Cases')}
           {this.renderItem(listAllCases.deaths, 'Deaths')}
           {this.renderItem(listAllCases.recovered, 'Recovered')}
+          {!loadingCountriesCases && listCountriesCases && pinnedCountry !== '' && (
+            <>
+              <Text style={[styles.textHero, { marginTop: 8 }]}>
+                Pinned Country
+              </Text>
+              {this.renderItemPinned(listCountriesCases)}
+            </>
+          )}
         </ScrollView>
       )
     }
@@ -141,7 +218,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getAllCases: bindActionCreators(getAllCases, dispatch)
+    getAllCases: bindActionCreators(getAllCases, dispatch),
+    getCountriesCases: bindActionCreators(getCountriesCases, dispatch)
   }
 }
 

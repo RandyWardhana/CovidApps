@@ -6,6 +6,7 @@ import { Spinner, Item, Icon } from 'native-base'
 import Feather from 'react-native-vector-icons/Feather'
 import { Card } from '@ui-kitten/components'
 import _ from 'lodash'
+import DefaultPreference from 'react-native-default-preference'
 
 import { getAllCases, getAllCountriesCases } from '../redux/actions/covidAction'
 import { danger, warning, basic, success, black, blackSecondary, disabled, white } from '../Lib/Color';
@@ -19,15 +20,38 @@ class CountriesScreen extends Component {
       refreshing: true,
       searchText: null,
       alert: true,
+      pinnedCountry: null
     }
   }
 
   componentDidMount() {
+    this.getPreference()
     this.props.getAllCountriesCases()
     this.setState({ refreshing: false, alert: true })
   }
 
+  getPreference() {
+    DefaultPreference.get('pinned').then((res) => {
+      this.setState({ pinnedCountry: res })
+    }).catch((err) => {
+      throw err
+    })
+  }
+
+  setDefaultPreference = (country) => {
+    DefaultPreference.set('pinned', country).then((res) => {
+      DefaultPreference.get('pinned').then((res) => {
+        this.setState({ pinnedCountry: res })
+      }).catch((err) => {
+        throw err
+      })
+    }).catch((err) => {
+      throw err
+    })
+  }
+
   onRefresh() {
+    this.getPreference()
     this.props.getAllCountriesCases()
     this.setState({ refreshing: false })
   }
@@ -38,6 +62,7 @@ class CountriesScreen extends Component {
 
   renderItem(item, index) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
+    const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
 
     return (
       <Card key={index} style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
@@ -46,8 +71,15 @@ class CountriesScreen extends Component {
 
         {/* Header */}
         <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
-          <Text style={styles.textTitle}>{item.country}</Text>
-          <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
+          <View style={styles.column}>
+            <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
+            <Text style={styles.textTitle}>{item.country}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => this.setDefaultPreference(item.country)}
+            style={{ alignSelf: 'center' }}>
+            <Icon type='AntDesign' name={pinned} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
+          </TouchableOpacity>
         </View>
         {/* Divider */}
         <View style={styles.divider} />
