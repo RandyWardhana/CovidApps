@@ -63,7 +63,7 @@ class CountriesScreen extends Component {
   renderItem(item, index) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
     const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
-    const setPreference = this.state.pinnedCountry !== '' ? '' : item.country
+    const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
 
     return (
       <Card key={index} style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
