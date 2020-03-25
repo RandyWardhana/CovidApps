@@ -43,12 +43,25 @@ export const getAllCountriesCases = () => {
 export const getCountriesCases = (country) => {
   return async (dispatch) => {
     try {
+
+      let object = [];
       dispatch(showLoadingCountries())
+      if (typeof country == 'object' || 'array') {
+        country.map(async (item) => {
+          let response =  await api.getCountriesCases(item);
+
+          object.push(response.data);
+
+          dispatch(fetchCountriesCases(object))
+
+          dispatch(hideLoadingCountries())
+        })
+      } else {
+        let result = await api.getCountriesCases(country)
+        dispatch(fetchCountriesCases(result.data))
   
-      let result = await api.getCountriesCases(country)
-      dispatch(fetchCountriesCases(result.data))
-  
-      dispatch(hideLoadingCountries())
+        dispatch(hideLoadingCountries())
+      }
   
     } catch (e) {
       throw e

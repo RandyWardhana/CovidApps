@@ -16,7 +16,7 @@ class AllScreen extends Component {
     super(props)
     this.state = {
       refreshing: true,
-      pinnedCountry: ''
+      pinnedCountry: []
     }
   }
 
@@ -28,8 +28,9 @@ class AllScreen extends Component {
   }
 
   getPreference() {
-    DefaultPreference.get('pinned').then((res) => {
-      this.setState({ pinnedCountry: res })      
+    DefaultPreference.get('pinned').then((res) => {  
+
+      this.setState({ pinnedCountry: JSON.parse(res) })
     }).catch((err) => {
       throw err
     })
@@ -139,7 +140,11 @@ class AllScreen extends Component {
               <Text style={[styles.textHero, { marginTop: 8 }]}>
                 Pinned Country
               </Text>
-              {this.renderItemPinned(listCountriesCases)}
+              {
+                listCountriesCases.map((item) => {
+                  return this.renderItemPinned(item)
+                })
+              }
             </>
           )}
         </ScrollView>
