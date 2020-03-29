@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, TouchableOpacity } from 'react-native'
+import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, TextInput, TouchableOpacity, FlatList } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { Spinner, Icon } from 'native-base'
+import { Spinner, Icon, Item } from 'native-base'
+import Feather from 'react-native-vector-icons/Feather'
 import { Card } from '@ui-kitten/components'
 import _ from 'lodash'
 import DefaultPreference from 'react-native-default-preference'
 
-import { getAllCases, getCountriesCases } from '../redux/actions/covidAction'
+import { getAllCases, getAllCountriesCases, getCountriesCases } from '../redux/actions/covidAction'
 import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
 
 class AllScreen extends Component {
@@ -16,20 +17,25 @@ class AllScreen extends Component {
     super(props)
     this.state = {
       refreshing: true,
-      pinnedCountry: ''
+      pinnedCountry: '',
+      filteredListItem: null,
+      refreshing: true,
+      searchText: null,
+      alert: true,
     }
   }
 
   componentDidMount() {
     this.getPreference()
     this.props.getAllCases()
+    this.props.getAllCountriesCases()
 
     this.setState({ refreshing: false })
   }
 
   getPreference() {
     DefaultPreference.get('pinned').then((res) => {
-      this.setState({ pinnedCountry: res })      
+      this.setState({ pinnedCountry: res })
     }).catch((err) => {
       throw err
     })
@@ -44,6 +50,8 @@ class AllScreen extends Component {
   onRefresh() {
     this.getPreference()
     this.props.getAllCases()
+    this.props.getAllCountriesCases()
+
     this.setState({ refreshing: false })
   }
 
@@ -51,8 +59,8 @@ class AllScreen extends Component {
     return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
   }
 
-  setDefaultPreference() {
-    DefaultPreference.set('pinned', '').then((res) => {
+  setDefaultPreference(dataPreference) {
+    DefaultPreference.set('pinned', dataPreference).then((res) => {
       DefaultPreference.get('pinned').then((res) => {
         this.setState({ pinnedCountry: res })
       }).catch((err) => {
@@ -63,11 +71,25 @@ class AllScreen extends Component {
     })
   }
 
-  renderItem(item, header) {
+  onSearchTextChange = (searchText) => {
+    const { listAllCountriesCases } = this.props.covid
+
+    let filtered = _.filter(listAllCountriesCases, (item) => {
+      return item.country.toLowerCase().includes(searchText.toLowerCase())
+    })
+
+    if (_.isEmpty(searchText)) {
+      filtered = null
+    }
+
+    this.setState({ searchText, filteredListItem: filtered })
+  }
+
+  renderItemGlobal(item, header) {
     let statusHeader = header == 'Cases' ? black : header == 'Deaths' ? danger : success
 
     return (
-      <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
+      <Card style={{ marginRight: 8, fontFamily: 'Poppins-Medium', width: 200 }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
@@ -83,21 +105,34 @@ class AllScreen extends Component {
     )
   }
 
-  renderItemPinned(item) {
+  renderItem(pinned, item, index) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
 
+    const pinnedCountry = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
+    const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
+
+    const updatePreference = !pinned ? setPreference : ''
+    const pinnedIcon = !pinned ? pinnedCountry : 'pushpin'
+
     return (
-      <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium', marginBottom: 48 }}>
+      <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
         {/* Header */}
         <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
-          <Text style={styles.textTitle}>{item.country}</Text>
+          {!pinned ? (
+            <View style={styles.column}>
+              <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
+              <Text style={styles.textTitle}>{item.country}</Text>
+            </View>
+          ) : (
+              <Text style={styles.textTitle}>{item.country}</Text>
+            )}
           <TouchableOpacity
-            onPress={() => this.setDefaultPreference()}
+            onPress={() => this.setDefaultPreference(updatePreference)}
             style={{ alignSelf: 'center' }}>
-            <Icon type='AntDesign' name='pushpin' style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
+            <Icon type='AntDesign' name={pinnedIcon} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
           </TouchableOpacity>
         </View>
         {/* Divider */}
@@ -121,36 +156,101 @@ class AllScreen extends Component {
     )
   }
 
+  renderSearch(searchText) {
+    return (
+      <Item style={styles.searchContainer}>
+        <Feather name='search' size={20} color={'#bdbdbd'} />
+        <TextInput
+          style={styles.textInput}
+          placeholder={'Search Country'}
+          placeholderTextColor={'#bdbdbd'}
+          value={searchText}
+          onChangeText={(text) => this.onSearchTextChange(text)} />
+      </Item>
+    )
+  }
+
+  renderListGlobal(listAllCases) {
+    return (
+      <>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexDirection: 'row', marginHorizontal: -16, paddingHorizontal: 16, paddingRight: 48 }}>
+          {this.renderItemGlobal(listAllCases.cases, 'Cases')}
+          {this.renderItemGlobal(listAllCases.deaths, 'Deaths')}
+          {this.renderItemGlobal(listAllCases.recovered, 'Recovered')}
+        </ScrollView>
+      </>
+    )
+  }
+
+  renderListPinned(listCountriesCases) {
+    return (
+      <>
+        <Text style={[styles.textHero, { marginTop: 8 }]}>
+          Pinned Country
+        </Text>
+        {this.renderItem(true, listCountriesCases)}
+      </>
+    )
+  }
+
+  renderListCountry(listAllCountriesCases, filteredListItem) {
+    return (
+      <>
+        <Text style={[styles.textHero, { marginTop: 8 }]}>
+          All Country
+        </Text>
+        <FlatList
+          contentContainerStyle={{ paddingBottom: 48 }}
+          data={filteredListItem || listAllCountriesCases}
+          renderItem={({ item, index }) => this.renderItem(false, item, index)} />
+      </>
+    )
+  }
+
+  renderLoading() {
+    return (
+      <View style={styles.spinner}>
+        <Spinner color={black} size={44} />
+      </View>
+    )
+  }
+
   renderData() {
-    const { listAllCases, listCountriesCases, loadingAllCases, loadingCountriesCases } = this.props.covid
-    const { refreshing, pinnedCountry } = this.state
+    const { listAllCases, listAllCountriesCases, listCountriesCases, loadingAllCases, loadingAllCountriesCases, loadingCountriesCases } = this.props.covid
+    const { refreshing, pinnedCountry, searchText, filteredListItem } = this.state
 
     if (!loadingAllCases && listAllCases) {
       return (
-        <ScrollView style={styles.container} refreshControl={<RefreshControl onRefresh={() => this.onRefresh()} refreshing={refreshing} />}>
-          <Text style={styles.textHero}>
-            Global Coronavirus Pandemic Cases
-          </Text>
-          {this.renderItem(listAllCases.cases, 'Cases')}
-          {this.renderItem(listAllCases.deaths, 'Deaths')}
-          {this.renderItem(listAllCases.recovered, 'Recovered')}
-          {!loadingCountriesCases && listCountriesCases && pinnedCountry !== '' && (
-            <>
-              <Text style={[styles.textHero, { marginTop: 8 }]}>
-                Pinned Country
-              </Text>
-              {this.renderItemPinned(listCountriesCases)}
-            </>
-          )}
-        </ScrollView>
+        <>
+          {this.renderSearch(searchText)}
+          <ScrollView
+            style={styles.container}
+            ref='_scrollView'
+            refreshControl={<RefreshControl onRefresh={() => this.onRefresh()} refreshing={refreshing} />}>
+            <Text style={styles.textHero}>
+              Global Coronavirus Pandemic Cases
+            </Text>
+            {this.renderListGlobal(listAllCases)}
+            {!loadingCountriesCases && listCountriesCases && pinnedCountry !== '' ? (
+              this.renderListPinned(listCountriesCases)
+            ) : loadingCountriesCases && !listCountriesCases ? this.renderLoading() : null}
+            {!loadingAllCountriesCases && listAllCountriesCases !== '' ? (
+              this.renderListCountry(listAllCountriesCases, filteredListItem)
+            ) : this.renderLoading()}
+          </ScrollView>
+          <SafeAreaView>
+            <TouchableOpacity style={styles.scrollToTop} onPress={() => { this.refs._scrollView.scrollTo(0) }}>
+              <Feather name='chevrons-up' style={{ color: white, fontSize: 28 }} />
+            </TouchableOpacity>
+          </SafeAreaView>
+        </>
       )
     }
     else {
-      return (
-        <View style={styles.spinner}>
-          <Spinner color={black} size={44} />
-        </View>
-      )
+      return this.renderLoading()
     }
   }
 
@@ -209,6 +309,25 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Bold',
     fontSize: 20,
     paddingVertical: 16,
+  },
+  textInput: {
+    color: black,
+    fontFamily: 'Poppins-Medium',
+    fontSize: 16,
+    flex: 1,
+    padding: 16,
+  },
+  searchContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  scrollToTop: {
+    backgroundColor: black,
+    bottom: 16,
+    padding: 8,
+    borderRadius: 32,
+    position: 'absolute',
+    right: 16,
   }
 })
 
@@ -219,6 +338,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => {
   return {
     getAllCases: bindActionCreators(getAllCases, dispatch),
+    getAllCountriesCases: bindActionCreators(getAllCountriesCases, dispatch),
     getCountriesCases: bindActionCreators(getCountriesCases, dispatch)
   }
 }
