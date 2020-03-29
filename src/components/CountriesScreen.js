@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, TouchableOpacity } from 'react-native'
+import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, TouchableOpacity, ToastAndroid } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { Spinner, Item, Icon } from 'native-base'
@@ -20,7 +20,7 @@ class CountriesScreen extends Component {
       refreshing: true,
       searchText: null,
       alert: true,
-      pinnedCountry: null
+      pinnedCountry: []
     }
   }
 
@@ -32,22 +32,36 @@ class CountriesScreen extends Component {
 
   getPreference() {
     DefaultPreference.get('pinned').then((res) => {
-      this.setState({ pinnedCountry: res })
+
+      this.setState({ pinnedCountry: JSON.parse(res) })
+
     }).catch((err) => {
       throw err
     })
   }
 
   setDefaultPreference = (country) => {
-    DefaultPreference.set('pinned', country).then((res) => {
-      DefaultPreference.get('pinned').then((res) => {
-        this.setState({ pinnedCountry: res })
+    let { pinnedCountry } = this.state
+
+    if (!pinnedCountry) {
+      let pin = [country]
+      this.setState({ pinnedCountry: pin })
+
+      DefaultPreference.set('pinned', JSON.stringify(pin)).then((res) => {
+        ToastAndroid.show(`${country} added to pinned`, ToastAndroid.SHORT)
       }).catch((err) => {
         throw err
       })
-    }).catch((err) => {
-      throw err
-    })
+    } else {
+      pinnedCountry.push(country)
+  
+      DefaultPreference.set('pinned', JSON.stringify(pinnedCountry)).then((res) => {
+        ToastAndroid.show(`${country} added to pinned`, ToastAndroid.SHORT)
+      }).catch((err) => {
+        throw err
+      })
+
+    }
   }
 
   onRefresh() {
@@ -62,9 +76,8 @@ class CountriesScreen extends Component {
 
   renderItem(item, index) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
-    const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
+    const pinned = this.state.pinnedCountry && this.state.pinnedCountry.includes(item.country) ? 'pushpin' : 'pushpino'
     const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
-
     return (
       <Card key={index} style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
         {/* Status Header */}
@@ -77,7 +90,7 @@ class CountriesScreen extends Component {
             <Text style={styles.textTitle}>{item.country}</Text>
           </View>
           <TouchableOpacity
-            onPress={() => this.setDefaultPreference(setPreference)}
+            onPress={() => this.setDefaultPreference(item.country)}
             style={{ alignSelf: 'center' }}>
             <Icon type='AntDesign' name={pinned} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
           </TouchableOpacity>
