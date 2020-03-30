@@ -105,34 +105,65 @@ class AllScreen extends Component {
     )
   }
 
-  renderItem(pinned, item, index) {
+  renderItemPinned(item) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
 
-    const pinnedCountry = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
-    const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
-
-    const updatePreference = !pinned ? setPreference : ''
-    const pinnedIcon = !pinned ? pinnedCountry : 'pushpin'
-
     return (
-      <Card style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
+      <Card style={{ marginVertical: 8, marginHorizontal: 16, fontFamily: 'Poppins-Medium' }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
         {/* Header */}
         <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
-          {!pinned ? (
-            <View style={styles.column}>
-              <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
-              <Text style={styles.textTitle}>{item.country}</Text>
-            </View>
-          ) : (
-              <Text style={styles.textTitle}>{item.country}</Text>
-            )}
+          <Text style={styles.textTitle}>{item.country}</Text>
           <TouchableOpacity
-            onPress={() => this.setDefaultPreference(updatePreference)}
+            onPress={() => this.setDefaultPreference('')}
             style={{ alignSelf: 'center' }}>
-            <Icon type='AntDesign' name={pinnedIcon} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
+            <Icon type='AntDesign' name={'pushpin'} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
+          </TouchableOpacity>
+        </View>
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Content */}
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths)}`}</Text>
+        </View>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths)}`}</Text>
+          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active)}`}</Text>
+        </View>
+        <View style={[styles.column, { marginVertical: 8 }]}>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
+          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical)}`}</Text>
+        </View>
+      </Card>
+    )
+  }
+
+  renderItem(item, index) {
+    let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
+    const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
+    const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
+
+
+    return (
+      <Card key={index} style={{ marginVertical: 8, marginHorizontal: 16, fontFamily: 'Poppins-Medium' }}>
+        {/* Status Header */}
+        <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
+
+        {/* Header */}
+        <View style={[styles.row, { alignItems: 'flex-end', justifyContent: 'space-between' }]}>
+          <View style={styles.column}>
+            <Text style={[styles.textTitle, { fontSize: 16 }]}>{`# ${index + 1}`}</Text>
+            <Text style={styles.textTitle}>{item.country}</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => this.setDefaultPreference(setPreference)}
+            style={{ alignSelf: 'center' }}>
+            <Icon type='AntDesign' name={pinned} style={{ fontSize: 24, transform: [{ rotate: '90deg' }] }} />
           </TouchableOpacity>
         </View>
         {/* Divider */}
@@ -166,6 +197,11 @@ class AllScreen extends Component {
           placeholderTextColor={'#bdbdbd'}
           value={searchText}
           onChangeText={(text) => this.onSearchTextChange(text)} />
+        {!_.isEmpty(searchText) && (
+          <TouchableOpacity onPress={() => this.setState({ searchText: '' })}>
+            <Feather name='x' size={20} color={'#bdbdbd'} />
+          </TouchableOpacity>
+        )}
       </Item>
     )
   }
@@ -174,9 +210,9 @@ class AllScreen extends Component {
     return (
       <>
         <ScrollView
+          contentContainerStyle={{ flexDirection: 'row', paddingHorizontal: 16 }}
           horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flexDirection: 'row', marginHorizontal: -16, paddingHorizontal: 16, paddingRight: 48 }}>
+          showsHorizontalScrollIndicator={false}>
           {this.renderItemGlobal(listAllCases.cases, 'Cases')}
           {this.renderItemGlobal(listAllCases.deaths, 'Deaths')}
           {this.renderItemGlobal(listAllCases.recovered, 'Recovered')}
@@ -191,12 +227,12 @@ class AllScreen extends Component {
         <Text style={[styles.textHero, { marginTop: 8 }]}>
           Pinned Country
         </Text>
-        {this.renderItem(true, listCountriesCases)}
+        {this.renderItemPinned(listCountriesCases)}
       </>
     )
   }
 
-  renderListCountry(listAllCountriesCases, filteredListItem) {
+  renderListCountry(filterListItem) {
     return (
       <>
         <Text style={[styles.textHero, { marginTop: 8 }]}>
@@ -204,8 +240,8 @@ class AllScreen extends Component {
         </Text>
         <FlatList
           contentContainerStyle={{ paddingBottom: 48 }}
-          data={filteredListItem || listAllCountriesCases}
-          renderItem={({ item, index }) => this.renderItem(false, item, index)} />
+          data={filterListItem}
+          renderItem={({ item, index }) => this.renderItem(item, index)} />
       </>
     )
   }
@@ -222,12 +258,13 @@ class AllScreen extends Component {
     const { listAllCases, listAllCountriesCases, listCountriesCases, loadingAllCases, loadingAllCountriesCases, loadingCountriesCases } = this.props.covid
     const { refreshing, pinnedCountry, searchText, filteredListItem } = this.state
 
+    const filterListItem = _.isEmpty(searchText) ? listAllCountriesCases : filteredListItem
+
     if (!loadingAllCases && listAllCases) {
       return (
         <>
           {this.renderSearch(searchText)}
           <ScrollView
-            style={styles.container}
             ref='_scrollView'
             refreshControl={<RefreshControl onRefresh={() => this.onRefresh()} refreshing={refreshing} />}>
             <Text style={styles.textHero}>
@@ -238,7 +275,7 @@ class AllScreen extends Component {
               this.renderListPinned(listCountriesCases)
             ) : loadingCountriesCases && !listCountriesCases ? this.renderLoading() : null}
             {!loadingAllCountriesCases && listAllCountriesCases !== '' ? (
-              this.renderListCountry(listAllCountriesCases, filteredListItem)
+              this.renderListCountry(filterListItem)
             ) : this.renderLoading()}
           </ScrollView>
           <SafeAreaView>
@@ -269,7 +306,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: white,
     flex: 1,
-    padding: Platform.OS == 'ios' ? 16 : 8,
   },
   spinner: {
     flex: 1,
@@ -308,7 +344,7 @@ const styles = StyleSheet.create({
     color: black,
     fontFamily: 'Poppins-Bold',
     fontSize: 20,
-    paddingVertical: 16,
+    padding: 16,
   },
   textInput: {
     color: black,
