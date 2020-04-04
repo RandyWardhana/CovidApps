@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import * as React from 'react'
 import { SafeAreaView, Text, ScrollView, View, StyleSheet, RefreshControl, Platform, TextInput, TouchableOpacity, FlatList } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
@@ -11,15 +11,30 @@ import DefaultPreference from 'react-native-default-preference'
 import { getAllCases, getAllCountriesCases, getCountriesCases } from '../redux/actions/covidAction'
 import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
 
-class AllScreen extends Component {
+interface AllScreenProps {
+  covid,
 
-  constructor(props) {
+  getAllCases,
+  getAllCountriesCases,
+  getCountriesCases
+}
+
+interface AllScreenState {
+  refreshing: boolean,
+  pinnedCountry?: string,
+  filteredListItem?: [],
+  searchText?: string,
+  alert: boolean
+}
+
+class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
+
+  constructor(props: AllScreenProps) {
     super(props)
     this.state = {
       refreshing: true,
       pinnedCountry: '',
       filteredListItem: null,
-      refreshing: true,
       searchText: null,
       alert: true,
     }
