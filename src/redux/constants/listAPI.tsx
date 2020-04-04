@@ -1,3 +1,5 @@
+'use strict'
+
 import axios from 'axios'
 import { baseURL } from './index'
 
@@ -15,7 +17,7 @@ export const create = () => {
     return API.get('countries')
   }
 
-  const getCountriesCases = (country) => {
+  const getCountriesCases = (country: string) => {
     return API.get(`countries/${country}`)
   }
 

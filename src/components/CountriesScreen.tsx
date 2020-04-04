@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import * as React from 'react'
 import { SafeAreaView, Text, FlatList, View, StyleSheet, RefreshControl, TextInput, TouchableOpacity } from 'react-native'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
@@ -9,28 +9,42 @@ import _ from 'lodash'
 import DefaultPreference from 'react-native-default-preference'
 
 import { getAllCases, getAllCountriesCases } from '../redux/actions/covidAction'
-import { danger, warning, basic, success, black, blackSecondary, disabled, white } from '../Lib/Color';
+import { danger, warning, basic, success, black, blackSecondary, disabled, white } from '../Lib/Color'
 
-class CountriesScreen extends Component {
+interface CountriesProps {
+  covid?: any,
 
-  constructor(props) {
+  getAllCountriesCases: any
+}
+
+interface CountriesState {
+  filteredListItem: [],
+  refreshing: boolean,
+  searchText: string,
+  alert: boolean,
+  pinnedCountry: string,
+}
+
+class CountriesScreen extends React.Component<CountriesProps, CountriesState> {
+
+  constructor(props: CountriesProps, state: CountriesState) {
     super(props)
     this.state = {
-      filteredListItem: null,
-      refreshing: true,
-      searchText: null,
-      alert: true,
-      pinnedCountry: null
+      filteredListItem: state.filteredListItem,
+      refreshing: state.refreshing,
+      searchText: state.searchText,
+      alert: state.alert,
+      pinnedCountry: state.pinnedCountry
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.getPreference()
     this.props.getAllCountriesCases()
     this.setState({ refreshing: false, alert: true })
   }
 
-  getPreference() {
+  getPreference(): void {
     DefaultPreference.get('pinned').then((res) => {
       this.setState({ pinnedCountry: res })
     }).catch((err) => {
@@ -38,7 +52,7 @@ class CountriesScreen extends Component {
     })
   }
 
-  setDefaultPreference = (country) => {
+  setDefaultPreference = (country: string): void => {
     DefaultPreference.set('pinned', country).then((res) => {
       DefaultPreference.get('pinned').then((res) => {
         this.setState({ pinnedCountry: res })
@@ -50,23 +64,23 @@ class CountriesScreen extends Component {
     })
   }
 
-  onRefresh() {
+  onRefresh(): void {
     this.getPreference()
     this.props.getAllCountriesCases()
     this.setState({ refreshing: false })
   }
 
-  formatNumber(num) {
+  formatNumber(num: number): String {
     return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
   }
 
-  renderItem(item, index) {
+  renderItem(item: any, index: number) {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
     const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
     const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
 
     return (
-      <Card key={index} style={{ marginVertical: 8, fontFamily: 'Poppins-Medium' }}>
+      <Card key={index} style={{ marginVertical: 8 }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
@@ -103,10 +117,10 @@ class CountriesScreen extends Component {
     )
   }
 
-  onSearchTextChange = (searchText) => {
+  onSearchTextChange = (searchText: string) => {
     const { listAllCountriesCases } = this.props.covid
 
-    let filtered = _.filter(listAllCountriesCases, (item) => {
+    let filtered = _.filter(listAllCountriesCases, (item: any) => {
       return item.country.toLowerCase().includes(searchText.toLowerCase())
     })
 
@@ -167,7 +181,7 @@ class CountriesScreen extends Component {
   render() {
     return (
       <>
-        <SafeAreaView style={styles.container} showsVerticalScrollIndicator={false}>
+        <SafeAreaView style={styles.container}>
           {this.renderData()}
         </SafeAreaView>
       </>

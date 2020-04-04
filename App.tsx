@@ -1,14 +1,13 @@
-import React, { Component } from 'react'
+import * as React from 'react'
 import { StatusBar } from 'react-native'
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import { IconRegistry, ApplicationProvider } from '@ui-kitten/components'
 import { mapping, light } from '@eva-design/eva'
 
-import AllScreen from './src/components/AllScreen'
-import { AppNavigator } from './src/navigation/AppNavigator'
+import AppNavigator from './src/navigation/AppNavigator'
 import { white } from './src/Lib/Color';
 
-class App extends Component {
+class App extends React.Component<Object> {
 
   render() {
     return (
@@ -16,8 +15,7 @@ class App extends Component {
         <IconRegistry icons={EvaIconsPack} />
         <StatusBar barStyle='dark-content' backgroundColor={white} />
         <ApplicationProvider mapping={mapping} theme={light}>
-          <AllScreen />
-          {/* <AppNavigator /> */}
+          <AppNavigator />
         </ApplicationProvider>
       </>
     )

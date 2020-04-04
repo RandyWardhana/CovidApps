@@ -6,7 +6,7 @@ import {
   GET_COUNTRIES_START, GET_COUNTRIES, GET_COUNTRIES_STOP
 } from '../constants/index'
 
-const defaultState = {
+const initialState: Object = {
   listAllCases: null,
   listAllCountriesCases: null,
   listCountriesCases: null,
@@ -16,7 +16,7 @@ const defaultState = {
   loadingCountriesCases: false,
 }
 
-export default (state = defaultState, action) => {
+export default (state = initialState, action: any): Object => {
   switch (action.type) {
     case GET_ALL_CASES_START:
       state = {

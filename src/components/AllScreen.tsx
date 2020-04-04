@@ -12,11 +12,11 @@ import { getAllCases, getAllCountriesCases, getCountriesCases } from '../redux/a
 import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
 
 interface AllScreenProps {
-  covid,
+  covid?: any,
 
-  getAllCases,
-  getAllCountriesCases,
-  getCountriesCases
+  getAllCases: any,
+  getAllCountriesCases: any,
+  getCountriesCases: any
 }
 
 interface AllScreenState {
@@ -29,18 +29,21 @@ interface AllScreenState {
 
 class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
 
-  constructor(props: AllScreenProps) {
+  private myRef: any
+  constructor(props: AllScreenProps, state: AllScreenState) {
     super(props)
     this.state = {
-      refreshing: true,
-      pinnedCountry: '',
-      filteredListItem: null,
-      searchText: null,
-      alert: true,
+      refreshing: state.refreshing,
+      pinnedCountry: state.pinnedCountry,
+      filteredListItem: state.filteredListItem,
+      searchText: state.searchText,
+      alert: state.alert,
     }
+
+    this.myRef = React.createRef()
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.getPreference()
     this.props.getAllCases()
     this.props.getAllCountriesCases()
@@ -48,7 +51,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     this.setState({ refreshing: false })
   }
 
-  getPreference() {
+  getPreference(): void {
     DefaultPreference.get('pinned').then((res) => {
       this.setState({ pinnedCountry: res })
     }).catch((err) => {
@@ -56,13 +59,13 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     })
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps: any, prevState: any): void {
     if (this.state.pinnedCountry !== prevState.pinnedCountry) {
       if (!_.isEmpty(this.state.pinnedCountry)) this.props.getCountriesCases(this.state.pinnedCountry)
     }
   }
 
-  onRefresh() {
+  onRefresh(): void {
     this.getPreference()
     this.props.getAllCases()
     this.props.getAllCountriesCases()
@@ -70,11 +73,11 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     this.setState({ refreshing: false })
   }
 
-  formatNumber(num) {
+  formatNumber(num: number): String {
     return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
   }
 
-  setDefaultPreference(dataPreference) {
+  setDefaultPreference(dataPreference: string): void {
     DefaultPreference.set('pinned', dataPreference).then((res) => {
       DefaultPreference.get('pinned').then((res) => {
         this.setState({ pinnedCountry: res })
@@ -86,10 +89,10 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     })
   }
 
-  onSearchTextChange = (searchText) => {
+  onSearchTextChange = (searchText: string) => {
     const { listAllCountriesCases } = this.props.covid
 
-    let filtered = _.filter(listAllCountriesCases, (item) => {
+    let filtered = _.filter(listAllCountriesCases, (item: any) => {
       return item.country.toLowerCase().includes(searchText.toLowerCase())
     })
 
@@ -100,11 +103,11 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     this.setState({ searchText, filteredListItem: filtered })
   }
 
-  renderItemGlobal(item, header) {
+  renderItemGlobal(item: number, header: string): Object {
     let statusHeader = header == 'Cases' ? black : header == 'Deaths' ? danger : success
 
     return (
-      <Card style={{ marginRight: 8, fontFamily: 'Poppins-Medium', width: 200 }}>
+      <Card style={{ marginRight: 8, width: 200 }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
@@ -120,11 +123,11 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderItemPinned(item) {
+  renderItemPinned(item: any): Object {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
 
     return (
-      <Card style={{ marginVertical: 8, marginHorizontal: 16, fontFamily: 'Poppins-Medium' }}>
+      <Card style={{ marginVertical: 8, marginHorizontal: 16 }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
@@ -158,14 +161,14 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderItem(item, index) {
+  renderItem(item: any, index: number): any {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
     const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
     const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
 
 
     return (
-      <Card key={index} style={{ marginVertical: 8, marginHorizontal: 16, fontFamily: 'Poppins-Medium' }}>
+      <Card key={index} style={{ marginVertical: 8, marginHorizontal: 16 }}>
         {/* Status Header */}
         <View style={[styles.statusHeader, { backgroundColor: statusHeader }]} />
 
@@ -202,7 +205,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderSearch(searchText) {
+  renderSearch(searchText: string): Object {
     return (
       <Item style={styles.searchContainer}>
         <Feather name='search' size={20} color={'#bdbdbd'} />
@@ -221,7 +224,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderListGlobal(listAllCases) {
+  renderListGlobal(listAllCases: any): Object {
     return (
       <>
         <ScrollView
@@ -236,7 +239,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderListPinned(listCountriesCases) {
+  renderListPinned(listCountriesCases: any): Object {
     return (
       <>
         <Text style={[styles.textHero, { marginTop: 8 }]}>
@@ -247,7 +250,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderListCountry(filterListItem) {
+  renderListCountry(filterListItem: []): Object {
     return (
       <>
         <Text style={[styles.textHero, { marginTop: 8 }]}>
@@ -261,7 +264,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderLoading() {
+  renderLoading(): Object {
     return (
       <View style={styles.spinner}>
         <Spinner color={black} size={44} />
@@ -269,7 +272,11 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
-  renderData() {
+  scrollToTop(): void {
+    this.myRef.current.scrollTo({x: 0, y: 0, animated: true})
+  }
+
+  renderData(): Object {
     const { listAllCases, listAllCountriesCases, listCountriesCases, loadingAllCases, loadingAllCountriesCases, loadingCountriesCases } = this.props.covid
     const { refreshing, pinnedCountry, searchText, filteredListItem } = this.state
 
@@ -280,7 +287,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
         <>
           {this.renderSearch(searchText)}
           <ScrollView
-            ref='_scrollView'
+            ref={this.myRef}
             refreshControl={<RefreshControl onRefresh={() => this.onRefresh()} refreshing={refreshing} />}>
             <Text style={styles.textHero}>
               Global Coronavirus Pandemic Cases
@@ -294,7 +301,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
             ) : this.renderLoading()}
           </ScrollView>
           <SafeAreaView>
-            <TouchableOpacity style={styles.scrollToTop} onPress={() => { this.refs._scrollView.scrollTo(0) }}>
+            <TouchableOpacity style={styles.scrollToTop} onPress={() => this.scrollToTop()}>
               <Feather name='chevrons-up' style={{ color: white, fontSize: 28 }} />
             </TouchableOpacity>
           </SafeAreaView>
@@ -306,10 +313,10 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     }
   }
 
-  render() {
+  render(): Object {
     return (
       <>
-        <SafeAreaView style={styles.container} showsVerticalScrollIndicator={false}>
+        <SafeAreaView style={styles.container}>
           {this.renderData()}
         </SafeAreaView>
       </>

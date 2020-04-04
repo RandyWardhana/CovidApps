@@ -12,7 +12,7 @@ YellowBox.ignoreWarnings(
   ]
 );
 
-const RNRedux = () => (
+const RNRedux = (): any => (
   <Provider store={store}>
     <App />
   </Provider>

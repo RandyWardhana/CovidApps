@@ -10,7 +10,7 @@ import {
 let api = API.create()
 
 export const getAllCases = () => {
-  return async (dispatch) => {
+  return async (dispatch: any) => {
     try {
       dispatch(showLoading())
       
@@ -25,7 +25,7 @@ export const getAllCases = () => {
 }
 
 export const getAllCountriesCases = () => {
-  return async (dispatch) => {
+  return async (dispatch: any) => {
     try {
       dispatch(showAllLoadingCountries())
 
@@ -40,8 +40,8 @@ export const getAllCountriesCases = () => {
   }
 }
 
-export const getCountriesCases = (country) => {
-  return async (dispatch) => {
+export const getCountriesCases = (country: string) => {
+  return async (dispatch: any) => {
     try {
       dispatch(showLoadingCountries())
   
@@ -56,21 +56,21 @@ export const getCountriesCases = (country) => {
   }
 }
 
-function fetchAllCases(listAllCases) {
+function fetchAllCases(listAllCases: object) {
   return {
     type: GET_ALL_CASES,
     listAllCases
   }
 }
 
-function fetchAllCountriesCases(listAllCountriesCases) {
+function fetchAllCountriesCases(listAllCountriesCases: object) {
   return {
     type: GET_ALL_COUNTRIES,
     listAllCountriesCases
   }
 }
 
-function fetchCountriesCases(listCountriesCases) {
+function fetchCountriesCases(listCountriesCases: object) {
   return {
     type: GET_COUNTRIES,
     listCountriesCases
