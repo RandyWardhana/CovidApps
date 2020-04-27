@@ -118,7 +118,7 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
         <View style={styles.divider} />
 
         {/* Content */}
-        <Text style={[styles.textDetail, { fontFamily: 'Poppins-Medium' }]}>{this.formatNumber(item)}</Text>
+        <Text style={[styles.textDetail, { fontFamily: 'Poppins-Medium' }]}>{this.formatNumber(item || 0)}</Text>
       </Card>
     )
   }
@@ -145,17 +145,17 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
 
         {/* Content */}
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases)}`}</Text>
-          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths || 0)}`}</Text>
         </View>
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases)}`}</Text>
-          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths)}`}</Text>
-          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active || 0)}`}</Text>
         </View>
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
-          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical)}`}</Text>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical || 0)}`}</Text>
         </View>
       </Card>
     )
@@ -189,17 +189,17 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
 
         {/* Content */}
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases)}`}</Text>
-          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Cases: ${this.formatNumber(item.todayCases || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Today Deaths: ${this.formatNumber(item.todayDeaths || 0)}`}</Text>
         </View>
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases)}`}</Text>
-          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths)}`}</Text>
-          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Cases: ${this.formatNumber(item.cases || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Total Deaths: ${this.formatNumber(item.deaths || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Positive Cases: ${this.formatNumber(item.active || 0)}`}</Text>
         </View>
         <View style={[styles.column, { marginVertical: 8 }]}>
-          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered)}`}</Text>
-          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical)}`}</Text>
+          <Text style={styles.textDetail}>{`Recovered: ${this.formatNumber(item.recovered || 0)}`}</Text>
+          <Text style={styles.textDetail}>{`Critical Condition: ${this.formatNumber(item.critical || 0)}`}</Text>
         </View>
       </Card>
     )
@@ -314,6 +314,8 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
   }
 
   render(): Object {
+    console.log(this.props, 'buset');
+    
     return (
       <>
         <SafeAreaView style={styles.container}>
