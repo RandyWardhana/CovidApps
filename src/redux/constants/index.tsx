@@ -12,4 +12,6 @@ export const GET_COUNTRIES_START = 'GET_COUNTRIES_START'
 export const GET_COUNTRIES = 'GET_COUNTRIES'
 export const GET_COUNTRIES_STOP = 'GET_COUNTRIES_STOP'
 
+export const IS_CONNECTED = 'IS_CONNECTED'
+
 export const baseURL = 'https://coronavirus-19-api.herokuapp.com/'

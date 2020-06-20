@@ -9,7 +9,10 @@ import _ from 'lodash'
 import DefaultPreference from 'react-native-default-preference'
 
 import { getAllCases, getAllCountriesCases, getCountriesCases } from '../redux/actions/covidAction'
+import { setConnection } from '../redux/actions/informationAction'
 import { danger, warning, basic, success, black, blackSecondary, disabled, white, } from '../Lib/Color'
+import { dynamicSort } from '../Lib/Lib';
+import NoInternet from './NoInternet'
 
 interface AllScreenProps {
   covid?: any,
@@ -26,6 +29,8 @@ interface AllScreenState {
   searchText?: string,
   alert: boolean
 }
+
+let sort = 'desc'
 
 class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
 
@@ -44,9 +49,12 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
   }
 
   componentDidMount(): void {
+    const { getAllCases, getAllCountriesCases, setConnection }: any = this.props
+
     this.getPreference()
-    this.props.getAllCases()
-    this.props.getAllCountriesCases()
+    setConnection()
+    getAllCases()
+    getAllCountriesCases()
 
     this.setState({ refreshing: false })
   }
@@ -66,9 +74,12 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
   }
 
   onRefresh(): void {
+    const { getAllCases, getAllCountriesCases, setConnection }: any = this.props
+
     this.getPreference()
-    this.props.getAllCases()
-    this.props.getAllCountriesCases()
+    setConnection()
+    getAllCases()
+    getAllCountriesCases()
 
     this.setState({ refreshing: false })
   }
@@ -163,9 +174,9 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
 
   renderItem(item: any, index: number): any {
     let statusHeader = item.cases >= 1000 ? danger : item.cases >= 500 ? warning : item.cases <= 100 ? basic : success
+
     const pinned = this.state.pinnedCountry == item.country ? 'pushpin' : 'pushpino'
     const setPreference = !_.isEmpty(this.state.pinnedCountry) ? '' : item.country
-
 
     return (
       <Card key={index} style={{ marginVertical: 8, marginHorizontal: 16 }}>
@@ -250,6 +261,8 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
     )
   }
 
+  renderItems = ({ item, index }) => this.renderItem(item, index)
+
   renderListCountry(filterListItem: []): Object {
     return (
       <>
@@ -257,9 +270,12 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
           All Country
         </Text>
         <FlatList
+          initialNumToRender={5}
+          windowSize={10}
+          maxToRenderPerBatch={10}
           contentContainerStyle={{ paddingBottom: 48 }}
           data={filterListItem}
-          renderItem={({ item, index }) => this.renderItem(item, index)} />
+          renderItem={this.renderItems} />
       </>
     )
   }
@@ -273,14 +289,18 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
   }
 
   scrollToTop(): void {
-    this.myRef.current.scrollTo({x: 0, y: 0, animated: true})
+    this.myRef.current.scrollTo({ x: 0, y: 0, animated: true })
   }
 
   renderData(): Object {
     const { listAllCases, listAllCountriesCases, listCountriesCases, loadingAllCases, loadingAllCountriesCases, loadingCountriesCases } = this.props.covid
     const { refreshing, pinnedCountry, searchText, filteredListItem } = this.state
 
-    const filterListItem = _.isEmpty(searchText) ? listAllCountriesCases : filteredListItem
+    let listCountries: any = []
+
+    if (!_.isEmpty(listAllCountriesCases)) listCountries = listAllCountriesCases.sort(dynamicSort('cases', sort))
+
+    const filterListItem = _.isEmpty(searchText) ? listCountries : filteredListItem
 
     if (!loadingAllCases && listAllCases) {
       return (
@@ -314,9 +334,10 @@ class AllScreen extends React.Component<AllScreenProps, AllScreenState> {
   }
 
   render(): Object {
-    console.log(this.props, 'buset');
-    
-    return (
+    const { info }: any = this.props
+
+    if (!info.status) return <NoInternet onPress={() => this.onRefresh()} />
+    else return (
       <>
         <SafeAreaView style={styles.container}>
           {this.renderData()}
@@ -391,12 +412,14 @@ const styles = StyleSheet.create({
   }
 })
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   covid: state.covid,
+  info: state.info,
 })
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    setConnection: bindActionCreators(setConnection, dispatch),
     getAllCases: bindActionCreators(getAllCases, dispatch),
     getAllCountriesCases: bindActionCreators(getAllCountriesCases, dispatch),
     getCountriesCases: bindActionCreators(getCountriesCases, dispatch)
